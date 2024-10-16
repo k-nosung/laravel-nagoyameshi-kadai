@@ -26,7 +26,8 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth:admin
     Route::get('home', [Admin\HomeController::class, 'index'])->name('home');
 });
 
+
 Route::middleware('auth:admin')->group(function () {
     Route::get('admin/users', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
-    Route::get('admin/show/{user}', [App\Http\Controllers\Admin\UserController::class, 'show'])->name('admin.users.show');
+    Route::get('admin/users/{user}', [App\Http\Controllers\Admin\UserController::class, 'show'])->name('admin.users.show');
 });
