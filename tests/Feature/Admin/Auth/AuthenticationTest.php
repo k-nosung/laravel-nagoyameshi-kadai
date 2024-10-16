@@ -24,7 +24,7 @@ class AuthenticationTest extends TestCase
     {
         $admin = new Admin();
         $admin->email = 'admin@example.com';
-        $admin->password = Hash::make('nagoyameshi');
+        $admin->password = bcrypt('nagoyameshi');
         $admin->save();
 
         $response = $this->post('/admin/login', [
@@ -40,7 +40,7 @@ class AuthenticationTest extends TestCase
     {
         $admin = new Admin();
         $admin->email = 'admin@example.com';
-        $admin->password = Hash::make('nagoyameshi');
+        $admin->password = bcrypt('nagoyameshi');
         $admin->save();
 
         $this->post('/admin/login', [
@@ -55,7 +55,7 @@ class AuthenticationTest extends TestCase
     {
         $admin = new Admin();
         $admin->email = 'admin@example.com';
-        $admin->password = Hash::make('nagoyameshi');
+        $admin->password = bcrypt('nagoyameshi');
         $admin->save();
 
         $response = $this->actingAs($admin, 'admin')->post('/admin/logout');
