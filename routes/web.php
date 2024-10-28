@@ -3,7 +3,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\RestaurantController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,10 +26,8 @@ require __DIR__.'/auth.php';
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth:admin'], function () {
     Route::get('home', [Admin\HomeController::class, 'index'])->name('home');
-});
+    Route::resource('users', Admin\UserController::class)->only(['index', 'show']);
+    Route::resource('restaurants', Admin\RestaurantController::class);
+   });
 
 
-Route::middleware('auth:admin')->group(function () {
-    Route::get('admin/users', [App\Http\Controllers\Admin\UserController::class, 'index'])->name('admin.users.index');
-    Route::get('admin/users/{user}', [App\Http\Controllers\Admin\UserController::class, 'show'])->name('admin.users.show');
-});
