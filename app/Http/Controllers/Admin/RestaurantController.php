@@ -53,7 +53,7 @@ public function show(Restaurant $restaurant)
       $restaurant = new Restaurant($validated);
 
       if ($request->hasFile('image')) {
-          $image = $request->file('image')->store('public/restaurants');
+          $image = $request->file('image')->store('restaurants');
           $restaurant->image = basename($image);
       } else {
           $restaurant->image = '';
