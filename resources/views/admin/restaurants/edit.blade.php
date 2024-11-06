@@ -50,7 +50,11 @@
                     </div>
 
                     <!-- 選択された画像の表示場所 -->
-                    <div class="row" id="imagePreview"></div>
+                    @if ($restaurant->image !== '')
+                        <div class="row" id="imagePreview"><img src="{{ asset('storage/restaurants/'. $restaurant->image) }}" class="mb-3"></div>
+                    @else
+                        <div class="row" id="imagePreview"></div>
+                    @endif
 
                     <div class="form-group row mb-3">
                         <label for="description" class="col-md-5 col-form-label text-md-left fw-bold">説明</label>
@@ -155,6 +159,41 @@
                             <input type="number" class="form-control" id="seating_capacity" name="seating_capacity" value="{{ old('seating_capacity', $restaurant->seating_capacity) }}">
                         </div>
                     </div>
+
+                    @for ($i = 0; $i < 3; $i++)
+                        <div class="form-group row mb-3">
+                            <label for="category{{ $i + 1 }}" class="col-md-5 col-form-label text-md-left fw-bold">カテゴリ{{ $i + 1 }}（3つまで選択可）</label>
+
+                            <div class="col-md-7">
+                                <select class="form-control form-select" id="category{{ $i + 1 }}" name="category_ids[]">
+                                    <option value="">選択なし</option>
+                                    @if (old('category_ids'))
+                                        @foreach ($categories as $category)
+                                            @if ($category->id == old("category_ids.{$i}"))
+                                                <option value="{{ $category->id }}" selected>{{ $category->name }}</option>
+                                            @else
+                                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            @endif
+                                        @endforeach
+                                    @else
+                                        @if (array_key_exists($i, $category_ids))
+                                            @foreach ($categories as $category)
+                                                @if ($category->id == $category_ids[$i])
+                                                    <option value="{{ $category->id }}" selected>{{ $category->name }}</option>
+                                                @else
+                                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            @foreach ($categories as $category)
+                                                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            @endforeach
+                                        @endif
+                                    @endif
+                                </select>
+                            </div>
+                        </div>
+                    @endfor
 
                     <hr class="my-4">
 

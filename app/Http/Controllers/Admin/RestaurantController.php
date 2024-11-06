@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Admin; 
 use App\Models\Restaurant; 
+use App\Models\Category;
 use Illuminate\Http\Request;
 
 class RestaurantController extends Controller
@@ -33,7 +34,8 @@ public function show(Restaurant $restaurant)
   }
  public function create()
   {
-    return view('admin.restaurants.create');
+    $categories = Category::all();
+        return view('admin.restaurants.create', compact('categories'));
   }
   public function store(Request $request)
   {
@@ -60,14 +62,20 @@ public function show(Restaurant $restaurant)
       }
 
       $restaurant->save();
-    
+      $category_ids = $request->input('category_ids', []);
+      $category_ids = array_filter($category_ids);
+      // $category_ids = array_filter($request->input('category_ids'));
+      $restaurant->categories()->sync($category_ids);
+
     // リダイレクトとフラッシュメッセージの設定
     return redirect()->route('admin.restaurants.index')->with('flash_message', '店舗を登録しました。');
   }
   public function edit(Restaurant $restaurant)
   {
     // 編集する店舗データをビューに渡す
-    return view('admin.restaurants.edit', compact('restaurant'));
+   $categories = $restaurant->categories;
+        $category_ids = $restaurant->categories->pluck('id')->toArray();
+        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids'));
   }
 
   public function update(Request $request, Restaurant $restaurant)
@@ -90,7 +98,10 @@ public function show(Restaurant $restaurant)
           $restaurant->image = basename($image);
       }
 
-      $restaurant->update($request->all());
+      // $restaurant->update($request->all());
+      $restaurant->update($request->except('category_ids'));
+      $category_ids = $request->input('category_ids', []);
+      $restaurant->categories()->sync(array_filter($category_ids));
    
      // フラッシュメッセージ
      return redirect()->route('admin.restaurants.show', $restaurant->id)->with('flash_message', '店舗を更新しました。');
