@@ -53,7 +53,7 @@ public function show(Restaurant $restaurant)
       ]);
 
       $restaurant = new Restaurant($validated);
-
+      $restaurant->name = $request->input('name');
       if ($request->hasFile('image')) {
           $image = $request->file('image')->store('restaurants');
           $restaurant->image = basename($image);
@@ -61,6 +61,15 @@ public function show(Restaurant $restaurant)
           $restaurant->image = '';
       }
 
+      $restaurant->description = $request->input('description');
+      $restaurant->lowest_price = $request->input('lowest_price');
+      $restaurant->highest_price = $request->input('highest_price');
+      $restaurant->postal_code = $request->input('postal_code');
+      $restaurant->address = $request->input('address');
+      $restaurant->opening_time = $request->input('opening_time');
+      $restaurant->closing_time = $request->input('closing_time');
+      $restaurant->seating_capacity = $request->input('seating_capacity');
+      
       $restaurant->save();
       $category_ids = $request->input('category_ids', []);
       $category_ids = array_filter($category_ids);
@@ -92,16 +101,28 @@ public function show(Restaurant $restaurant)
           'closing_time' => 'required|date_format:H:i|after:opening_time',
           'seating_capacity' => 'required|numeric|min:0',
       ]);
-
+      $restaurant->name = $request->input('name');
       if ($request->hasFile('image')) {
           $image = $request->file('image')->store('public/restaurants');
           $restaurant->image = basename($image);
       }
+       else {
+      $restaurant->image = '';
+      }
+      $restaurant->description = $request->input('description');
+      $restaurant->lowest_price = $request->input('lowest_price');
+      $restaurant->highest_price = $request->input('highest_price');
+      $restaurant->postal_code = $request->input('postal_code');
+      $restaurant->address = $request->input('address');
+      $restaurant->opening_time = $request->input('opening_time');
+      $restaurant->closing_time = $request->input('closing_time');
+      $restaurant->seating_capacity = $request->input('seating_capacity');
 
       // $restaurant->update($request->all());
       $restaurant->update($request->except('category_ids'));
       $category_ids = $request->input('category_ids', []);
       $restaurant->categories()->sync(array_filter($category_ids));
+
    
      // フラッシュメッセージ
      return redirect()->route('admin.restaurants.show', $restaurant->id)->with('flash_message', '店舗を更新しました。');
