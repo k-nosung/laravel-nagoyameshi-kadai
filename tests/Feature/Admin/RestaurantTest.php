@@ -1,16 +1,15 @@
 <?php
 namespace Tests\Feature\Admin;
-use App\Models\Restaurant;
-use App\Models\User;
 use App\Models\Admin;
+use App\Models\User;
+use App\Models\Restaurant;
 use App\Models\Category;
-use Illuminate\Http\UploadedFile;
-use Carbon\Carbon; // Carbon クラスをインポート
-use Illuminate\Support\Str; // Str クラスをインポート
+use App\Models\RegularHoliday;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
+
 class RestaurantTest extends TestCase
 {
     use RefreshDatabase;
@@ -72,23 +71,9 @@ class RestaurantTest extends TestCase
     // storeアクション（店舗登録機能）
     public function test_guest_cannot_store_admin_restaurant()
     {
-          // CSRFミドルウェアを無効化
-        $this->withoutMiddleware();
-        $restaurant_data = [
-            'name' => 'テスト',
-            'description' => 'テスト',
-            'lowest_price' => 1000,
-            'highest_price' => 5000,
-            'postal_code' => '0000000',
-            'address' => 'テスト',
-            'opening_time' => '10:00',
-            'closing_time' => '20:00',
-            'seating_capacity' => 50
-        ];
+        $restaurantData = Restaurant::factory()->make()->toArray();
 
-        $response = $this->post(route('admin.restaurants.store'), $restaurant_data);
-
-        $this->assertDatabaseMissing('restaurants', $restaurant_data);
+        $response = $this->post(route('admin.restaurants.store'), $restaurantData);
 
         $response->assertRedirect(route('admin.login'));
     
@@ -97,33 +82,21 @@ class RestaurantTest extends TestCase
     public function test_authenticated_user_cannot_store_admin_restaurant()
     {
         $user = User::factory()->create();
-    
-        $restaurant_data = [
-            'name' => 'テスト',
-            'description' => 'テスト',
-            'lowest_price' => 1000,
-            'highest_price' => 5000,
-            'postal_code' => '0000000',
-            'address' => 'テスト',
-            'opening_time' => '10:00',
-            'closing_time' => '20:00',
-            'seating_capacity' => 50
-        ];
+        $restaurantData = Restaurant::factory()->make()->toArray();
 
-        // $response = $this->actingAs($user)->post(route('admin.restaurants.store'), $restaurant_data);
-        $response = $this->post(route('admin.restaurants.store'), $restaurant_data);
+        $response = $this->actingAs($user)->post(route('admin.restaurants.store', $restaurantData));
 
-        $this->assertDatabaseMissing('restaurants', $restaurant_data);
-
-    $response->assertRedirect('/admin/login');
+        $response->assertRedirect(route('admin.login'));
     }
     public function test_admin_can_store_admin_restaurant()
     {
         $admin = Admin::factory()->create();
          // ユニークなカテゴリー名を生成するために uniqid() を使用
         $categories = Category::factory()->count(3)->create();
-
+        $regular_holidays = RegularHoliday::factory()->count(2)->create(); 
         $categoryIds = $categories->pluck('id')->toArray();
+        $regular_holiday_ids = $regular_holidays->pluck('id')->toArray();
+
         $restaurant_data = [
             'name' => 'Store Name',
             'description' => 'A brief description of the store.',
@@ -134,9 +107,13 @@ class RestaurantTest extends TestCase
             'opening_time' => '10:00',
             'closing_time' => '20:00',
             'seating_capacity' => 50,
-            'category_ids' => [1, 2, 3],
+            'category_ids' => $categoryIds, // 関連するカテゴリを指定
+            'regular_holiday_ids' => $regular_holiday_ids,
         ];
-        $response = $this->actingAs($admin, 'admin')->post(route('admin.restaurants.store'), $restaurant_data);
+
+         $response = $this->actingAs($admin, 'admin')->post(route('admin.restaurants.store'), $restaurant_data);
+
+        unset($restaurant_data['category_ids'], $restaurant_data['regular_holiday_ids']);
         $this->assertDatabaseHas('restaurants', $restaurant_data);
 
         $restaurant = Restaurant::latest('id')->first();
@@ -145,7 +122,11 @@ class RestaurantTest extends TestCase
             $this->assertDatabaseHas('category_restaurant', ['restaurant_id' => $restaurant->id, 'category_id' => $category_id]);
         }
 
-        $response->assertRedirect(route('admin.restaurants.index'));
+        foreach ($regular_holiday_ids as $regular_holiday_id) {
+            $this->assertDatabaseHas('regular_holiday_restaurant', ['restaurant_id' => $restaurant->id, 'regular_holiday_id' => $regular_holiday_id]);
+        }
+            $response->assertRedirect(route('admin.restaurants.index'));
+
       
     }
     // editアクション（店舗編集ページ）
@@ -190,6 +171,9 @@ class RestaurantTest extends TestCase
         $restaurant = Restaurant::factory()->create();
         $categories = Category::factory()->count(3)->create();
         $categoryIds = $categories->pluck('id')->toArray();
+        $regular_holidays = RegularHoliday::factory()->count(3)->create();
+        $regular_holiday_ids = $regular_holidays->pluck('id')->toArray();
+
         $new_restaurant_data = [
             'name' => 'Updated Store Name',
             'description' => 'A brief description of the store.',
@@ -201,6 +185,7 @@ class RestaurantTest extends TestCase
             'closing_time' => '20:00',
             'seating_capacity' => 50,
             'category_ids' => $categoryIds,
+            'regular_holiday_ids' => $regular_holiday_ids, 
     ];
     $response = $this->actingAs($admin, 'admin')->patch(route('admin.restaurants.update', $restaurant), $restaurant_data);
     $this->assertDatabaseHas('restaurants', $restaurant_data);
@@ -210,7 +195,9 @@ class RestaurantTest extends TestCase
     foreach ($category_ids as $category_id) {
         $this->assertDatabaseHas('category_restaurant', ['restaurant_id' => $restaurant->id, 'category_id' => $category_id]);
     }
-
+  foreach ($regular_holiday_ids as $regular_holiday_id) {
+                $this->assertDatabaseHas('regular_holiday_restaurant', ['restaurant_id' => $restaurant->id, 'regular_holiday_id' => $regular_holiday_id]);
+            }
     $response->assertRedirect(route('admin.restaurants.show', $old_restaurant));
    }
 

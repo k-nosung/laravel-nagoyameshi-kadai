@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Admin; 
 use App\Models\Restaurant; 
 use App\Models\Category;
+use App\Models\RegularHoliday;
 use Illuminate\Http\Request;
 
 class RestaurantController extends Controller
@@ -35,7 +36,8 @@ public function show(Restaurant $restaurant)
  public function create()
   {
     $categories = Category::all();
-        return view('admin.restaurants.create', compact('categories'));
+    $regular_holidays = RegularHoliday::all();
+     return view('admin.restaurants.create', compact('categories'));
   }
   public function store(Request $request)
   {
@@ -60,12 +62,21 @@ public function show(Restaurant $restaurant)
       } else {
           $restaurant->image = '';
       }
-
+      $restaurant->description = $request->input('description');
+      $restaurant->lowest_price = $request->input('lowest_price');
+      $restaurant->highest_price = $request->input('highest_price');
+      $restaurant->postal_code = $request->input('postal_code');
+      $restaurant->address = $request->input('address');
+      $restaurant->opening_time = $request->input('opening_time');
+      $restaurant->closing_time = $request->input('closing_time');
+      $restaurant->seating_capacity = $request->input('seating_capacity');
       $restaurant->save();
-      $category_ids = $request->input('category_ids', []);
-      $category_ids = array_filter($category_ids);
-      // $category_ids = array_filter($request->input('category_ids'));
+
+      $category_ids = array_filter($request->input('category_ids'));
       $restaurant->categories()->sync($category_ids);
+
+      $regular_holiday_ids = $request->input('regular_holiday_ids');
+      $restaurant->regular_holidays()->sync($regular_holiday_ids);
 
     // リダイレクトとフラッシュメッセージの設定
     return redirect()->route('admin.restaurants.index')->with('flash_message', '店舗を登録しました。');
@@ -73,9 +84,11 @@ public function show(Restaurant $restaurant)
   public function edit(Restaurant $restaurant)
   {
     // 編集する店舗データをビューに渡す
-   $categories = $restaurant->categories;
+    $categories = Category::all();
+    $regular_holidays = RegularHoliday::all();
+
         $category_ids = $restaurant->categories->pluck('id')->toArray();
-        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids'));
+        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids', 'regular_holidays'));
   }
 
   public function update(Request $request, Restaurant $restaurant)
@@ -92,17 +105,32 @@ public function show(Restaurant $restaurant)
           'closing_time' => 'required|date_format:H:i|after:opening_time',
           'seating_capacity' => 'required|numeric|min:0',
       ]);
+      $restaurant->name = $request->input('name');
 
       if ($request->hasFile('image')) {
           $image = $request->file('image')->store('public/restaurants');
           $restaurant->image = basename($image);
       }
+ $restaurant->description = $request->input('description');
+        $restaurant->lowest_price = $request->input('lowest_price');
+        $restaurant->highest_price = $request->input('highest_price');
+        $restaurant->postal_code = $request->input('postal_code');
+        $restaurant->address = $request->input('address');
+        $restaurant->opening_time = $request->input('opening_time');
+        $restaurant->closing_time = $request->input('closing_time');
+        $restaurant->seating_capacity = $request->input('seating_capacity');
+        $restaurant->save();
+        
+        if ($request->hasFile('image')) {
+          $image = $request->file('image')->store('public/restaurants');
+          $restaurant->image = basename($image);
+      }
 
-      // $restaurant->update($request->all());
-      $restaurant->update($request->except('category_ids'));
-      $category_ids = $request->input('category_ids', []);
-      $restaurant->categories()->sync(array_filter($category_ids));
-   
+        $category_ids = array_filter($request->input('category_ids'));
+        $restaurant->categories()->sync($category_ids);
+
+        $regular_holiday_ids = $request->input('regular_holiday_ids');
+        $restaurant->regular_holidays()->sync($regular_holiday_ids);
      // フラッシュメッセージ
      return redirect()->route('admin.restaurants.show', $restaurant->id)->with('flash_message', '店舗を更新しました。');
   }  
