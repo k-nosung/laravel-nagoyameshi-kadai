@@ -11,20 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('category_restaurant')) {
-        Schema::create('category_restaurant', function (Blueprint $table) {
+        Schema::create('regular_holidays', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('restaurant_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('category_id')->constrained()->cascadeOnDelete();
+            $table->string('day'); 
+            $table->integer('day_index')->nullable(); // 定休日の番号
             $table->timestamps();
         });
     }
-}
+
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('category_restaurant');
+        Schema::dropIfExists('regular_holidays');
     }
 };
