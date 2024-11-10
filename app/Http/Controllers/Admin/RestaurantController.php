@@ -37,7 +37,7 @@ public function show(Restaurant $restaurant)
   {
     $categories = Category::all();
     $regular_holidays = RegularHoliday::all();
-     return view('admin.restaurants.create', compact('categories'));
+     return view('admin.restaurants.create', compact('categories', 'regular_holidays'));
   }
   public function store(Request $request)
   {
@@ -55,7 +55,7 @@ public function show(Restaurant $restaurant)
       ]);
 
       $restaurant = new Restaurant($validated);
-
+      $restaurant->name = $request->input('name');
       if ($request->hasFile('image')) {
           $image = $request->file('image')->store('restaurants');
           $restaurant->image = basename($image);
@@ -88,7 +88,8 @@ public function show(Restaurant $restaurant)
     $regular_holidays = RegularHoliday::all();
 
         $category_ids = $restaurant->categories->pluck('id')->toArray();
-        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids', 'regular_holidays'));
+        $regular_holiday_ids = $restaurant->regular_holidays->pluck('id')->toArray();
+        return view('admin.restaurants.edit', compact('restaurant', 'categories', 'category_ids', 'regular_holidays','regular_holiday_ids'));
   }
 
   public function update(Request $request, Restaurant $restaurant)
@@ -111,7 +112,7 @@ public function show(Restaurant $restaurant)
           $image = $request->file('image')->store('public/restaurants');
           $restaurant->image = basename($image);
       }
- $restaurant->description = $request->input('description');
+        $restaurant->description = $request->input('description');
         $restaurant->lowest_price = $request->input('lowest_price');
         $restaurant->highest_price = $request->input('highest_price');
         $restaurant->postal_code = $request->input('postal_code');

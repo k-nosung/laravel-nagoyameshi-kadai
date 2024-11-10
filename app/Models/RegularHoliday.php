@@ -10,6 +10,6 @@ class RegularHoliday extends Model
     use HasFactory;
 
     public function restaurants() {
-        return $this->belongsToMany(Restaurant::class)->withTimestamps();
+        return $this->belongsToMany(Restaurant::class,)->withTimestamps();
     }
 }

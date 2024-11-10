@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('regular_holidays', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('restaurant_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('regular_holiday_id')->constrained()->cascadeOnDelete();
+            $table->string('day'); 
+            $table->integer('day_index')->nullable(); // 定休日の番号
             $table->timestamps();
         });
     }

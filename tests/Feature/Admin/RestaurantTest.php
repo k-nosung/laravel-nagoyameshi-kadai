@@ -91,7 +91,6 @@ class RestaurantTest extends TestCase
     public function test_admin_can_store_admin_restaurant()
     {
         $admin = Admin::factory()->create();
-         // ユニークなカテゴリー名を生成するために uniqid() を使用
         $categories = Category::factory()->count(3)->create();
         $regular_holidays = RegularHoliday::factory()->count(2)->create(); 
         $categoryIds = $categories->pluck('id')->toArray();
@@ -118,10 +117,10 @@ class RestaurantTest extends TestCase
 
         $restaurant = Restaurant::latest('id')->first();
 
-        foreach ($category_ids as $category_id) {
+        foreach ($categoryIds as $category_id) {
             $this->assertDatabaseHas('category_restaurant', ['restaurant_id' => $restaurant->id, 'category_id' => $category_id]);
         }
-
+        
         foreach ($regular_holiday_ids as $regular_holiday_id) {
             $this->assertDatabaseHas('regular_holiday_restaurant', ['restaurant_id' => $restaurant->id, 'regular_holiday_id' => $regular_holiday_id]);
         }
@@ -187,18 +186,25 @@ class RestaurantTest extends TestCase
             'category_ids' => $categoryIds,
             'regular_holiday_ids' => $regular_holiday_ids, 
     ];
-    $response = $this->actingAs($admin, 'admin')->patch(route('admin.restaurants.update', $restaurant), $restaurant_data);
-    $this->assertDatabaseHas('restaurants', $restaurant_data);
+    $response = $this->actingAs($admin, 'admin')->patch(route('admin.restaurants.update', $restaurant), $new_restaurant_data);
+    unset($new_restaurant_data['category_ids'], $new_restaurant_data['regular_holiday_ids']);
+    $this->assertDatabaseHas('restaurants', $new_restaurant_data);
 
     $restaurant = Restaurant::latest('id')->first();
 
-    foreach ($category_ids as $category_id) {
-        $this->assertDatabaseHas('category_restaurant', ['restaurant_id' => $restaurant->id, 'category_id' => $category_id]);
-    }
-  foreach ($regular_holiday_ids as $regular_holiday_id) {
-                $this->assertDatabaseHas('regular_holiday_restaurant', ['restaurant_id' => $restaurant->id, 'regular_holiday_id' => $regular_holiday_id]);
+    foreach ($categoryIds as $category_id) {
+        $this->assertDatabaseHas('category_restaurant', [
+              'restaurant_id' => $restaurant->id,
+              'category_id' => $category_id
+                ]);
             }
-    $response->assertRedirect(route('admin.restaurants.show', $old_restaurant));
+    foreach ($regular_holiday_ids as $regular_holiday_id) {
+         $this->assertDatabaseHas('regular_holiday_restaurant', [
+              'restaurant_id' => $restaurant->id,
+              'regular_holiday_id' => $regular_holiday_id
+                ]);
+            }
+    $response->assertRedirect(route('admin.restaurants.show', $restaurant));
    }
 
     // destroyアクション（店舗削除機能）

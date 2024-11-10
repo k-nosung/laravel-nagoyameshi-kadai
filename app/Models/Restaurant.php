@@ -8,6 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Restaurant extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'name',
+        'description',
+        'lowest_price',
+        'highest_price',
+        'postal_code',
+        'address',
+        'opening_time',
+        'closing_time',
+        'seating_capacity',
+        // 他の必要なフィールドも追加
+    ];
     public function categories() {
         return $this->belongsToMany(Category::class)->withTimestamps();
     }
