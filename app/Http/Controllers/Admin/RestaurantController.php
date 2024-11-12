@@ -71,15 +71,6 @@ public function show(Restaurant $restaurant)
       $restaurant->opening_time = $request->input('opening_time');
       $restaurant->closing_time = $request->input('closing_time');
       $restaurant->seating_capacity = $request->input('seating_capacity');
-
-      $restaurant->description = $request->input('description');
-      $restaurant->lowest_price = $request->input('lowest_price');
-      $restaurant->highest_price = $request->input('highest_price');
-      $restaurant->postal_code = $request->input('postal_code');
-      $restaurant->address = $request->input('address');
-      $restaurant->opening_time = $request->input('opening_time');
-      $restaurant->closing_time = $request->input('closing_time');
-      $restaurant->seating_capacity = $request->input('seating_capacity');
       
       $restaurant->save();
 
@@ -90,7 +81,7 @@ public function show(Restaurant $restaurant)
       $restaurant->regular_holidays()->sync($regular_holiday_ids);
 
     // リダイレクトとフラッシュメッセージの設定
-    return redirect()->route('admin.restaurants.index')->with('flash_message', '店舗を登録しました。');
+    return view('admin.restaurants.index')->with('flash_message', '店舗を登録しました。');
   }
   public function edit(Restaurant $restaurant)
   {
@@ -145,7 +136,7 @@ public function show(Restaurant $restaurant)
         $restaurant->regular_holidays()->sync($regular_holiday_ids);
   
      // フラッシュメッセージ
-     return redirect()->route('admin.restaurants.show', $restaurant->id)->with('flash_message', '店舗を更新しました。');
+     return view('admin.restaurants.show', $restaurant->id)->with('flash_message', '店舗を更新しました。');
   }  
   public function destroy(Restaurant $restaurant)
   {

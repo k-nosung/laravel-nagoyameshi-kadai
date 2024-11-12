@@ -3,12 +3,13 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin;
-use App\Http\Controllers\Admin\HomeController;
+use App\Http\Controllers\Admin\HomeController as AdminHomeController;  
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RestaurantController;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\TermController;
+use App\Http\Controllers\HomeController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -20,9 +21,11 @@ use App\Http\Controllers\Admin\TermController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+
+Route::group(['middleware' => 'guest:admin'], function () {
+    Route::get('/', [HomeController::class, 'index'])->name('home');
 });
+
 Route::get('company', [CompanyController::class, 'index'])->name('company.index');
 Route::get('terms', [TermController::class, 'index'])->name('terms.index');
 
@@ -37,5 +40,6 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth:admin
     Route::resource('company', Admin\CompanyController::class)->only(['index', 'edit', 'update']);
     Route::resource('terms', Admin\TermController::class)->only(['index', 'edit', 'update']); 
 });
+
 
 
