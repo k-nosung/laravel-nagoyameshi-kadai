@@ -3,14 +3,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin;
-use App\Http\Controllers\Admin\HomeController as AdminHomeController;  
-use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\Admin\RestaurantController;
-use App\Http\Controllers\Admin\CategoryController;
-use App\Http\Controllers\Admin\CompanyController;
-use App\Http\Controllers\Admin\TermController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RestaurantController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -26,10 +21,9 @@ require __DIR__.'/auth.php';
 
 Route::group(['middleware' => 'guest:admin'], function () {
     Route::get('/', [HomeController::class, 'index'])->name('home');
-});
-Route::middleware(['auth', 'verified', 'guest:admin'])->group(function () {
-    Route::resource('user', UserController::class)->only(['index', 'edit', 'update']);
-});
+    Route::resource('user', UserController::class)->only(['index', 'edit', 'update'])->middleware(['auth', 'verified'])->names('user');
+    Route::resource('restaurants', RestaurantController::class)->only(['index', 'show'])->names('restaurants');
+   });
 
 Route::get('company', [CompanyController::class, 'index'])->name('company.index');
 Route::get('terms', [TermController::class, 'index'])->name('terms.index');

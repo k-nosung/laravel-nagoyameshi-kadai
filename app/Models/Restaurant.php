@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Kyslik\ColumnSortable\Sortable; 
 
 class Restaurant extends Model
 {
     use HasFactory;
+    use Sortable;  // Sortableトレイトを使用
     protected $fillable = [
         'name',
         'description',
