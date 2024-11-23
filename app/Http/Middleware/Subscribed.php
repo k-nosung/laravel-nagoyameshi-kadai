@@ -17,7 +17,7 @@ class Subscribed
     {
         if (! $request->user()?->subscribed('premium_plan')) {
             // ユーザーを支払いページへリダイレクトし、サブスクリプションを購入するか尋ねる
-            return redirect('/subscription/create');
+            return redirect('subscription/create');
         }
         return $next($request);
     }

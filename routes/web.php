@@ -9,6 +9,8 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\SubscriptionController;
+use App\Http\Middleware\Subscribed;
+use App\Http\Middleware\NotSubscribed;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReservationController; 
