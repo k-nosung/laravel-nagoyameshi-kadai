@@ -49,4 +49,13 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+    public function is_free_member()
+    {
+    return $this->subscription_type === 'free'; // 例：無料会員の場合
+    }
 }
