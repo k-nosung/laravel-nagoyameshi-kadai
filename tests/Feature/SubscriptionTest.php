@@ -8,14 +8,6 @@ use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 class SubscriptionTest extends TestCase
 {
-    /**
-     * A basic feature test example.
-     */
-    /*public function test_example(): void
-    {
-        $response = $this->get('/');
-        $response->assertStatus(200);
-    }*/
     use RefreshDatabase;
     // ---
     //create
@@ -44,9 +36,11 @@ class SubscriptionTest extends TestCase
             $user = User::factory()->create();
             $user->newSubscription('premium_plan', 'price_1QNZBeLgK93Ys8EgtIdiE0Hl')->create('pm_card_visa');
     
-            $response = $this->actingAs($user)->get(route('subscription.create'));
-    
+            $response = $this->actingAs($user)->post(route('subscription.store'), [
+                'paymentMethodId' => 'pm_card_visa',
+            ]);
             $response->assertRedirect(route('subscription.edit'));
+            
         }
     
         // ログイン済みの管理者は有料プラン登録ページにアクセスできない
@@ -94,14 +88,11 @@ class SubscriptionTest extends TestCase
      {
          $user = User::factory()->create();
          $user->newSubscription('premium_plan', 'price_1QNZBeLgK93Ys8EgtIdiE0Hl')->create('pm_card_visa');
- 
-         $request_parameter = [
-             'paymentMethodId' => 'pm_card_visa'
-         ];
- 
-         $response = $this->actingAs($user)->post(route('subscription.store'), $request_parameter);
- 
-         $response->assertRedirect(route('subscription.edit'));
+         $response = $this->actingAs($user)->post(route('subscription.store'), [
+            'paymentMethodId' => 'pm_card_visa',
+        ]);
+        
+        $response->assertRedirect(route('subscription.edit'));
      }
  
      // ログイン済みの管理者は有料プランに登録できない

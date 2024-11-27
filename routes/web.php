@@ -59,6 +59,10 @@ Route::group(['middleware' => 'guest:admin'], function () {
 
 Route::middleware(['auth', 'verified', 'guest:admin'])->group(function () {
     Route::resource('user', UserController::class)->only(['index', 'edit', 'update']);
+    Route::middleware(['auth', 'subscribed'])->group(function () {
+        Route::get('subscription/edit', [SubscriptionController::class, 'edit'])->name('subscription.edit');
+    });
+    
     Route::get('subscription/create', [SubscriptionController::class, 'create'])
         ->name('subscription.create')
         ->middleware('not.subscribed');
