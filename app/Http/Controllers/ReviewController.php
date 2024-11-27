@@ -1,79 +1,103 @@
 <?php
+
 namespace App\Http\Controllers;
+
 use Illuminate\Http\Request;
-use App\Models\Restaurant;
+
+//①
+use Illuminate\Support\Facades\Auth;
+
 use App\Models\Review;
+use App\Models\Restaurant;
+
 class ReviewController extends Controller
 {
-    //indexアクション
-    public function index(Restaurant $restaurant)
-{
-    if (auth()->user()->subscribed('premium_plan')) {
-        // 有料プランに登録済みの場合
-        $reviews = $restaurant->reviews()->orderBy('created_at', 'desc')->paginate(5);
-    } else {
-        // 有料プランに未登録の場合
-        $reviews = $restaurant->reviews()->orderBy('created_at', 'desc')->take(3)->get();
-        $reviews = collect($reviews); // コレクションに変換
+   // -----
+   // index アクション
+   // -----
+   //②
+    public function index(Restaurant $restaurant) {
+        if (Auth::user()->subscribed('premium_plan')) {
+            $reviews = Review::where('restaurant_id', $restaurant->id)->orderBy('created_at', 'desc')->paginate(5);
+        } else {
+            $reviews = Review::where('restaurant_id', $restaurant->id)->orderBy('created_at', 'desc')->take(3)->get();
+        }
+
+        return view('reviews.index', compact('restaurant', 'reviews'));
     }
-    return view('reviews.index', compact('restaurant', 'reviews'));
+
+   // -----
+   // create アクション
+   // -----
+   //③
+    public function create(Restaurant $restaurant) {
+        return view('reviews.create', compact('restaurant'));
 }
-//createアクション
-public function create(Restaurant $restaurant)
-{
-     // ユーザーが無料会員ならサブスクリプションページにリダイレクト
-     if (auth()->user()->is_free_member()) {
-        return redirect()->route('subscription.create');
+
+   // -----
+   // store アクション
+   // -----
+   //④
+    public function store(Request $request, Restaurant $restaurant) {
+            $request->validate([
+                'score' => 'required|numeric|between:1,5',
+                'content' => 'required',
+            ]);
+    
+            $review = new Review();
+            $review->score = $request->input('score');
+            $review->content = $request->input('content');
+            $review->restaurant_id = $restaurant->id;
+            $review->user_id = $request->user()->id;
+            $review->save();
+    
+            return redirect()->route('restaurants.reviews.index', $restaurant)->with('flash_message', 'レビューを投稿しました。');
+        }
+
+   // -----
+   // edit アクション
+   // -----
+   //⑤
+    public function edit(Restaurant $restaurant, Review $review) {
+            if ($review->user_id !== Auth::id()) {
+                return redirect()->route('restaurants.reviews.index', $restaurant)->with('error_message', '不正なアクセスです。');
+            }
+    
+            return view('reviews.edit', compact('restaurant', 'review'));
+        }
+
+   // -----
+   // update アクション
+   // -----
+   //⑥
+    public function update(Request $request, Restaurant $restaurant, Review $review) {
+            if ($review->user_id !== Auth::id()) {
+                return redirect()->route('restaurants.reviews.index', $restaurant)->with('error_message', '不正なアクセスです。');
+            }
+    
+            $request->validate([
+                'score' => 'required|numeric|between:1,5',
+                'content' => 'required',
+            ]);
+    
+            $review->score = $request->input('score');
+            $review->content = $request->input('content');
+            $review->save();
+    
+            return redirect()->route('restaurants.reviews.index', $restaurant)->with('flash_message', 'レビューを編集しました。');
+        }
+
+   // -----
+   // destroy アクション
+   // -----
+   //⑦
+    public function destroy(Restaurant $restaurant, Review $review) {
+            if ($review->user_id !== Auth::id()) {
+                return redirect()->route('restaurants.reviews.index', $restaurant)->with('error_message', '不正なアクセスです。');
+            }
+    
+            $review->delete();
+    
+            return redirect()->route('restaurants.reviews.index', $restaurant)->with('flash_message', 'レビューを削除しました。');
+        }
     }
-    return view('reviews.create', compact('restaurant'));
-}
-//storeアクション
-public function store(Request $request, Restaurant $restaurant)
-{
-    // バリデーション
-    $request->validate([
-        'score' => 'required|integer|between:1,5',
-        'content' => 'required|string',
-    ]);
-    // レビューの作成
-    Review::create([
-        'content' => $request->content,
-        'score' => $request->score,
-        'restaurant_id' => $restaurant->id,
-        'user_id' => auth()->id(),
-    ]);
-    // フラッシュメッセージを設定してリダイレクト
-    return redirect()->route('restaurants.reviews.index', $restaurant)->with('flash_message', 'レビューを投稿しました。');
-}
-//editアクション
-public function edit(Restaurant $restaurant, Review $review)
-{
-    return view('reviews.edit', compact('restaurant', 'review'));
-}
-//updateアクション
-public function update(Request $request, Restaurant $restaurant, Review $review)
-{
-    // 他人のレビューを編集できないようにする
-    if ($review->user_id !== auth()->id()) {
-        return redirect()->route('restaurants.reviews.index', $restaurant)->with('error_message', '不正なアクセスです。');
-    }
-    // バリデーション
-    $request->validate([
-        'score' => 'required|integer|between:1,5',
-        'content' => 'required|string',
-    ]);
-    // レビューの更新
-    $review->update([
-        'content' => $request->content,
-        'score' => $request->score,
-    ]);
-    // フラッシュメッセージを設定してリダイレクト
-    return redirect()->route('restaurants.reviews.index', $restaurant)->with('flash_message', 'レビューを編集しました。');
-}
-//destroyアクション
-public function destroy(Restaurant $restaurant, Review $review)
-{
-    $review->delete();
-    return redirect()->route('restaurants.reviews.index', $restaurant)->with('flash_message', 'レビューを削除しました。');
-}
-}

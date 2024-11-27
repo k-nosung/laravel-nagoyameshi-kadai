@@ -132,6 +132,8 @@ class ReviewTest extends TestCase
      {
          $user = User::factory()->create();
  
+         $user->subscriptions()->delete();
+
          $restaurant = Restaurant::factory()->create();
  
          $review_data = [
@@ -203,7 +205,9 @@ class ReviewTest extends TestCase
      public function test_free_user_cannot_access_reviews_edit()
      {
          $user = User::factory()->create();
- 
+
+         $user->subscriptions()->delete();
+
          $restaurant = Restaurant::factory()->create();
  
          $review = Review::factory()->create([
@@ -432,7 +436,7 @@ class ReviewTest extends TestCase
      public function test_premium_user_cannot_access_others_reviews_destroy()
      {
          $user = User::factory()->create();
-         $user->newSubscription('premium_plan', '')->create('pm_card_visa');price_1QNZBeLgK93Ys8EgtIdiE0Hl;
+         $user->newSubscription('premium_plan', 'price_1QNZBeLgK93Ys8EgtIdiE0Hl')->create('pm_card_visa');
          $other_user = User::factory()->create();
  
          $restaurant = Restaurant::factory()->create();
