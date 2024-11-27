@@ -3,6 +3,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
 class NotSubscribed
@@ -15,6 +16,8 @@ class NotSubscribed
     // サブスク中ではない人はOK
     public function handle(Request $request, Closure $next): Response
     {
+        $user = Auth::user();
+
         if ($request->user()?->subscribed('premium_plan')) {
             return redirect()->route('subscription/edit');
         }
