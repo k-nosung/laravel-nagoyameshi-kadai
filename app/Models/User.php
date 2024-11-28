@@ -58,4 +58,7 @@ class User extends Authenticatable implements MustVerifyEmail
     {
     return $this->subscription_type === 'free'; // 例：無料会員の場合
     }
+    public function reservations() {
+        return $this->hasMany(Reservation::class);
+    }
 }

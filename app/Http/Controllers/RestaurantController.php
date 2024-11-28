@@ -17,7 +17,8 @@ class RestaurantController extends Controller
         $category_id = $request->input('category_id');
         // 選択された予算
         $price = $request->input('price');
-
+        
+        $sort = $request->input('sort', 'created_at desc');
         // クエリビルダを作成
         $query = Restaurant::query();
 
